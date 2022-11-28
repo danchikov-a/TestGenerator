@@ -1,15 +1,16 @@
 ﻿using System.Threading.Tasks.Dataflow;
-using TestGeneratorLibrary.Model;
-using TestGeneratorLibrary.Service;
+using TestGeneratorLibrary;
+using TestGeneratorLibrary.Services;
+using FileInfo = TestGeneratorLibrary.Models.FileInfo;
 
 namespace TestGeneratorConsole.Dataflow
 {
     public class DataflowService
     {
-        private readonly TestGeneratorService _testsGenerator;
+        private readonly TestGenerator _testsGenerator;
         private TransformBlock<string, string> _readerBlock;
-        private TransformManyBlock<string, FileInformation> _generatorBlock;
-        private ActionBlock<FileInformation> _writerBlock;
+        private TransformManyBlock<string, FileInfo> _generatorBlock;
+        private ActionBlock<FileInfo> _writerBlock;
 
         private readonly DataflowLinkOptions _linkOptions = new()
         {
@@ -21,7 +22,7 @@ namespace TestGeneratorConsole.Dataflow
             int writeTaskAmount,
             string savePath)
         {
-            _testsGenerator = new TestGeneratorService(new NamespaceIntegrationService(new ClassGenerationService()));
+            _testsGenerator = new TestGenerator(new NamespaceService(new ClassService()));
 
             ConfigureBlocks(readTaskAmount, generateTaskAmount, writeTaskAmount, savePath);
         }
@@ -33,12 +34,12 @@ namespace TestGeneratorConsole.Dataflow
                 new ExecutionDataflowBlockOptions {MaxDegreeOfParallelism = readTaskRestriction}
             );
             
-            _generatorBlock = new TransformManyBlock<string, FileInformation>(
+            _generatorBlock = new TransformManyBlock<string, FileInfo>(
                 source => _testsGenerator.Generate(source),
                 new ExecutionDataflowBlockOptions {MaxDegreeOfParallelism = generateTaskRestriction}
             );
             
-            _writerBlock = new ActionBlock<FileInformation>(
+            _writerBlock = new ActionBlock<FileInfo>(
                 async fileInfo =>
                 {
                     await CodeWriter.Write($"{savePath}\\{fileInfo.FileName}.cs", fileInfo.FileContent);
