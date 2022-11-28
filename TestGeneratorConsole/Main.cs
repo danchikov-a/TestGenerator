@@ -2,7 +2,7 @@
 
 namespace TestGeneratorConsole
 {
-    public static class TestGeneratorScript
+    public static class TestGeneratorMain
     {
         const string OUTPUT_DIRECTORY = "E:\\tests";
         const int AMOUNT_OF_READING_FILES = 20;

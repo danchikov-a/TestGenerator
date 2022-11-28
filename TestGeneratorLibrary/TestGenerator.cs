@@ -16,7 +16,7 @@ namespace TestGeneratorLibrary
             _namespaceService = namespaceService;
         }
 
-        public IEnumerable<FileInfo> Generate(string source)
+        public List<FileInfo> Generate(string source)
         {
             return CSharpSyntaxTree
                 .ParseText(source)
